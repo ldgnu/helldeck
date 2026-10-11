@@ -1,4 +1,4 @@
-# doom-web — DOOM en el navegador
+# helldeck — DOOM en el navegador
 
 Port de DOOM a WebAssembly con [doomgeneric](https://github.com/ozkl/doomgeneric)
 (puerto Emscripten basado en SDL). Reemplaza al experimento `goom` (Go + GLFW,
@@ -39,7 +39,7 @@ del usuario para WebAudio). Controles en la página.
 ## Estructura
 
 ```
-doom-web/
+helldeck/
   upstream/    doomgeneric (clon, no tocar)
   wads/        doom1.wad + freedoom (local, ignorado por git)
   shell.html   cáscara HTML propia (canvas, overlay, controles)
