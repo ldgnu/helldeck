@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOOM en el navegador</title>
+<style>
+  :root { color-scheme: dark; }
+  body { background: #111; color: #eee; font-family: monospace; margin: 0;
+         display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+  header { padding: 12px; text-align: center; }
+  header h1 { margin: 0 0 4px; font-size: 20px; color: #e33; letter-spacing: 2px; }
+  header p { margin: 0; color: #999; font-size: 13px; }
+  #wrap { position: relative; width: min(96vw, 960px); }
+  canvas { width: 100%; image-rendering: pixelated; background: #000;
+           border: 2px solid #333; display: block; }
+  #overlay { position: absolute; inset: 0; display: flex; align-items: center;
+             justify-content: center; background: rgba(0,0,0,.75); cursor: pointer;
+             font-size: 18px; text-align: center; padding: 20px; }
+  #overlay.hidden { display: none; }
+  #bar { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; justify-content: center; }
+  button { background: #222; color: #eee; border: 1px solid #555; padding: 8px 14px;
+           font-family: monospace; cursor: pointer; }
+  button:hover { background: #333; border-color: #e33; }
+  #status { color: #999; font-size: 12px; min-height: 16px; text-align: center; }
+  details { width: min(96vw, 960px); margin: 8px 0 24px; color: #bbb; font-size: 13px; }
+  table { border-collapse: collapse; margin-top: 6px; }
+  td { border: 1px solid #333; padding: 3px 10px; }
+  td:first-child { color: #fff; white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DOOM</h1>
+  <p>doomgeneric + WebAssembly &mdash; tus WADs, en el navegador</p>
+</header>
+
+<div id="wrap">
+  <canvas id="canvas" width="640" height="400"
+    oncontextmenu="event.preventDefault()"></canvas>
+  <div id="overlay">CLICK PARA JUGAR<br><small>(activa video + sonido)</small></div>
+</div>
+
+<div id="bar">
+  <button id="btn-full">Pantalla completa</button>
+  <button id="btn-restart">Reiniciar</button>
+</div>
+<div id="status">cargando...</div>
+
+<details>
+  <summary>Controles</summary>
+  <table>
+    <tr><td>Flechas</td><td>moverse / girar</td></tr>
+    <tr><td>Ctrl</td><td>disparar</td></tr>
+    <tr><td>Espacio</td><td>usar / abrir puertas</td></tr>
+    <tr><td>Shift</td><td>correr</td></tr>
+    <tr><td>Alt + flechas</td><td>strafe lateral</td></tr>
+    <tr><td>, .</td><td>strafe (alternativo)</td></tr>
+    <tr><td>1-7</td><td>cambiar arma</td></tr>
+    <tr><td>Enter</td><td>confirmar en men&uacute;s</td></tr>
+    <tr><td>Esc</td><td>men&uacute;</td></tr>
+    <tr><td>F2 F3 F6</td><td>guardar / cargar / quicksave</td></tr>
+  </table>
+</details>
+
+<script>
+  var Module = {
+    arguments: ['-iwad', 'doom1.wad'],
+    canvas: document.getElementById('canvas'),
+    setStatus: function (text) {
+      document.getElementById('status').textContent = text;
+    },
+    onRuntimeInitialized: function () {
+      document.getElementById('status').textContent = 'listo. click para jugar.';
+    }
+  };
+  // El click del usuario desbloquea WebAudio (el navegador lo exige).
+  document.getElementById('overlay').addEventListener('click', function () {
+    this.classList.add('hidden');
+    document.getElementById('canvas').focus();
+  });
+  document.getElementById('btn-full').addEventListener('click', function () {
+    var c = document.getElementById('canvas');
+    if (c.requestFullscreen) c.requestFullscreen();
+  });
+  document.getElementById('btn-restart').addEventListener('click', function () {
+    location.reload();
+  });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

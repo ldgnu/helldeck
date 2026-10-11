@@ -1,0 +1,10 @@
+# WADs locales (copias desde goom/backup, no se commitean: 59MB)
+*.wad
+*.WAD
+*.gwa
+# Build emscripten
+build/
+# Upstream clonado (se puede re-clonar)
+upstream/
+# Python
+__pycache__/
