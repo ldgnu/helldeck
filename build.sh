@@ -34,6 +34,8 @@ docker run --rm -v "$PWD:/src" -w /src emscripten/emsdk:latest bash -c '
     emcc -O2 -DFEATURE_SOUND -s USE_SDL=2 -s USE_SDL_MIXER=2 \
       -c "$f" -o "/tmp/obj/${f%.c}.o"
   done
+  emcc -O2 -s USE_SDL=2 -s USE_SDL_MIXER=2 \
+    -c /src/web_audio.c -o /tmp/obj/web_audio.o
   echo "==> Linkeando..."
   emcc -O2 /tmp/obj/*.o -o /src/build/doom.html \
     -s USE_SDL=2 \

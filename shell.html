@@ -100,28 +100,30 @@
   document.getElementById('t-load').addEventListener('click', function () {
     sendKey('F3', 'F3', 114);
   });
-  // Musica on/off: reescribe music_volume en el cfg y recarga.
+  // Musica on/off EN VIVO (sin recargar): usa el puente web_audio.c.
+  // El SetMusicVolume del juego no pega en este build (queda en 128),
+  // asi que fijamos 48 directo al mixer; 0 = mute.
   var musicBtn = document.getElementById('t-music');
-  function paintMusic() {
-    var off = false;
-    try { off = localStorage.getItem('doomMusic') === 'off'; } catch (e) {}
-    musicBtn.style.opacity = off ? '.35' : '1';
+  var MUSIC_ON_VOL = 48;
+  function musicOff() {
+    try { return localStorage.getItem('doomMusic') === 'off'; }
+    catch (e) { return false; }
+  }
+  function paintMusic() { musicBtn.style.opacity = musicOff() ? '.35' : '1'; }
+  function applyMusic() {
+    if (typeof Module._DG_MusicVolume !== 'function') return;
+    try { Module._DG_MusicVolume(musicOff() ? 0 : MUSIC_ON_VOL); } catch (e) {}
   }
   paintMusic();
+  // Aplica cuando el mixer ya levanto, y re-afirma el mute (el juego
+  // re-escribe el volumen al pausar/cambiar de tema).
+  setTimeout(applyMusic, 8000);
+  setInterval(function () { if (musicOff()) applyMusic(); }, 3000);
   musicBtn.addEventListener('click', function () {
-    var off = false;
-    try {
-      off = localStorage.getItem('doomMusic') !== 'off';
-      localStorage.setItem('doomMusic', off ? 'off' : 'on');
-    } catch (e) { off = true; }
-    try {
-      var cfg = FS.readFile('/persist/default.cfg', { encoding: 'utf8' });
-      if (/music_volume/.test(cfg)) cfg = cfg.replace(/music_volume\s+\d+/, 'music_volume ' + (off ? '0' : '5'));
-      else cfg += 'music_volume ' + (off ? '0' : '5') + '\n';
-      FS.writeFile('/persist/default.cfg', cfg);
-    } catch (e) {}
+    try { localStorage.setItem('doomMusic', musicOff() ? 'on' : 'off'); }
+    catch (e) {}
+    applyMusic();
     paintMusic();
-    FS.syncfs(false, function () { location.reload(); });
   });
   document.getElementById('t-full').addEventListener('click', function () {
     try {
