@@ -1,0 +1,6 @@
+.git/
+upstream/
+wads/
+timidity/gus/
+timidity/*.deb
+timidity/*.tar.gz

@@ -1,0 +1,7 @@
+services:
+  doom:
+    build: .
+    container_name: doom-web
+    ports:
+      - "8090:80"
+    restart: unless-stopped
