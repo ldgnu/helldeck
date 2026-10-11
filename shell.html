@@ -70,7 +70,7 @@
   var KNOWN = ['doom.wad', 'doom2.wad', 'plutonia.wad', 'tnt.wad', 'doom1.wad'];
   if (KNOWN.indexOf(WAD) < 0) WAD = 'doom.wad';
 
-  // Selector: se muestra al mover el mouse, se oculta a los 3s.
+  // Selector: se muestra al mover el mouse o tocar teclas, se oculta solo.
   var sw = document.getElementById('switch'), swTimer = null;
   document.querySelectorAll('#switch button[data-wad]').forEach(function (b) {
     if (b.dataset.wad === WAD) b.classList.add('active');
@@ -81,9 +81,11 @@
   function pokeSwitch() {
     sw.classList.add('show');
     clearTimeout(swTimer);
-    swTimer = setTimeout(function () { sw.classList.remove('show'); }, 3000);
+    swTimer = setTimeout(function () { sw.classList.remove('show'); }, 5000);
   }
   window.addEventListener('mousemove', pokeSwitch);
+  window.addEventListener('keydown', pokeSwitch);
+  window.addEventListener('touchstart', pokeSwitch);
   pokeSwitch();
   // Manda una tecla de funcion al juego (keydown + keyup).
   function sendKey(key, code, keyCode) {
