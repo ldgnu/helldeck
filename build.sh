@@ -1,20 +1,18 @@
 #!/bin/bash
 # Compila doomgeneric -> WASM usando Docker (sin instalar emsdk local).
-# Uso: ./build.sh [wad]   (default: doom1.wad desde wads/)
+# Uso: ./build.sh   (preloadea los 3 WADs desde wads/)
 set -e
 cd "$(dirname "$0")"
 
-WAD="${1:-doom1.wad}"
-if [ ! -f "wads/$WAD" ]; then
-  echo "No existe wads/$WAD. Disponibles:"
-  ls wads/
-  exit 1
-fi
-
 mkdir -p build
-cp "wads/$WAD" build/base.wad
+for w in doom1.wad freedoom1.wad freedoom2.wad; do
+  if [ ! -f "wads/$w" ]; then
+    echo "Falta wads/$w"
+    exit 1
+  fi
+done
 
-echo "==> Compilando con emscripten/emsdk (WAD: $WAD)..."
+echo "==> Compilando con emscripten/emsdk (doom1 + freedoom1 + freedoom2)..."
 docker run --rm -v "$PWD:/src" -w /src emscripten/emsdk:latest bash -c '
   set -e
   cd upstream/doomgeneric
@@ -41,7 +39,10 @@ docker run --rm -v "$PWD:/src" -w /src emscripten/emsdk:latest bash -c '
     -s USE_SDL_MIXER=2 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s INITIAL_MEMORY=64MB \
-    --preload-file /src/build/base.wad@/doom1.wad \
+    -lidbfs.js \
+    --preload-file /src/wads/doom1.wad@/doom1.wad \
+    --preload-file /src/wads/freedoom1.wad@/freedoom1.wad \
+    --preload-file /src/wads/freedoom2.wad@/freedoom2.wad \
     --shell-file /src/shell.html \
     -lm
 '
