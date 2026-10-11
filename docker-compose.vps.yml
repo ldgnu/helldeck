@@ -1,0 +1,14 @@
+# Variante VPS (outblast): red proxy externa, sin puertos publicados.
+# Uso en el VPS: docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+services:
+  doom:
+    container_name: helldeck
+    ports: []
+    expose:
+      - "80"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
