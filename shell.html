@@ -37,6 +37,7 @@
   <button data-wad="plutonia.wad">PLUTONIA</button>
   <button data-wad="tnt.wad">TNT</button>
   <button data-wad="doom1.wad">SHAREWARE</button>
+  <button id="btn-full">[FULL]</button>
 </div>
 <script>
   var params = new URLSearchParams(location.search);
@@ -59,6 +60,11 @@
   }
   window.addEventListener('mousemove', pokeSwitch);
   pokeSwitch();
+  document.getElementById('btn-full').addEventListener('click', function () {
+    var el = document.documentElement;
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (el.requestFullscreen) el.requestFullscreen();
+  });
 
   var Module = {
     arguments: ['-iwad', '/' + WAD],
