@@ -39,11 +39,28 @@
   }
   #switch button.active { color: #ffb301; border-color: #ffb301; }
   #switch button:hover { color: #fff; border-color: #fff; }
+  /* Pantalla de carga */
+  #loader {
+    position: fixed; inset: 0; z-index: 20; background: #000;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px;
+    font-family: system-ui, sans-serif; color: #ffb301;
+  }
+  #loader.hide { display: none; }
+  #loader .t { font-size: 28px; letter-spacing: 6px; color: #e33; }
+  #loader .bar { width: min(60vw, 420px); height: 14px; border: 1px solid #7a1f14; }
+  #loader .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #7a1f14, #ffb301); }
+  #loader .pct { font-size: 14px; letter-spacing: 2px; color: #999; }
 </style>
 </head>
 <body>
 <canvas id="canvas" width="640" height="400"
   oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
+<div id="loader">
+  <div class="t">DOOM</div>
+  <div class="bar"><div class="fill" id="loadfill"></div></div>
+  <div class="pct" id="loadpct">CARGANDO...</div>
+</div>
 <div id="switch">
   <button data-wad="doom.wad">DOOM 1 ULTIMATE</button>
   <button data-wad="doom2.wad">DOOM 2</button>
@@ -141,6 +158,25 @@
   var Module = {
     arguments: ['-iwad', '/' + WAD],
     canvas: document.getElementById('canvas'),
+    setStatus: function (text) {
+      // "Downloading data... (hechos/total)" -> barra de progreso.
+      var m = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(text || '');
+      var pct = document.getElementById('loadpct');
+      var fill = document.getElementById('loadfill');
+      if (m) {
+        var p = Math.round(100 * parseInt(m[1], 10) / parseInt(m[2], 10));
+        if (pct) pct.textContent = 'CARGANDO... ' + p + '%';
+        if (fill) fill.style.width = p + '%';
+      } else if (pct && !/Running/.test(text || '')) {
+        pct.textContent = (text || 'CARGANDO...').toUpperCase().slice(0, 60);
+      }
+    },
+    onRuntimeInitialized: function () {
+      // El motor ya corre: ocultar loader tras los primeros frames.
+      setTimeout(function () {
+        document.getElementById('loader').classList.add('hide');
+      }, 2500);
+    },
     preRun: [function () {
       // Solo montajes sincronicos: el .data aun no esta extraido aca.
       try { FS.mkdir('/persist'); } catch (e) {}
