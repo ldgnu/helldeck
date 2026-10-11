@@ -1,18 +1,19 @@
 #!/bin/bash
 # Compila doomgeneric -> WASM usando Docker (sin instalar emsdk local).
-# Uso: ./build.sh   (preloadea los 3 WADs desde wads/)
+# Uso: ./build.sh   (preloadea 5 WADs + parches GUS + cfgs timidity)
 set -e
 cd "$(dirname "$0")"
 
 mkdir -p build
-for w in doom1.wad freedoom1.wad freedoom2.wad; do
+for w in doom.wad doom2.wad plutonia.wad tnt.wad doom1.wad; do
   if [ ! -f "wads/$w" ]; then
     echo "Falta wads/$w"
     exit 1
   fi
 done
+[ -f timidity/gus/timidity.cfg ] || { echo "Faltan parches GUS en timidity/gus/"; exit 1; }
 
-echo "==> Compilando con emscripten/emsdk (doom1 + freedoom1 + freedoom2)..."
+echo "==> Compilando con emscripten/emsdk (5 WADs + MIDI)..."
 docker run --rm -v "$PWD:/src" -w /src emscripten/emsdk:latest bash -c '
   set -e
   cd upstream/doomgeneric
@@ -37,15 +38,21 @@ docker run --rm -v "$PWD:/src" -w /src emscripten/emsdk:latest bash -c '
   emcc -O2 /tmp/obj/*.o -o /src/build/doom.html \
     -s USE_SDL=2 \
     -s USE_SDL_MIXER=2 \
+    -s SDL2_MIXER_FORMATS='"'"'["mid"]'"'"' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s INITIAL_MEMORY=64MB \
     -lidbfs.js \
+    --preload-file /src/wads/doom.wad@/doom.wad \
+    --preload-file /src/wads/doom2.wad@/doom2.wad \
+    --preload-file /src/wads/plutonia.wad@/plutonia.wad \
+    --preload-file /src/wads/tnt.wad@/tnt.wad \
     --preload-file /src/wads/doom1.wad@/doom1.wad \
-    --preload-file /src/wads/freedoom1.wad@/freedoom1.wad \
-    --preload-file /src/wads/freedoom2.wad@/freedoom2.wad \
+    --preload-file /src/timidity/gus@/gus \
+    --preload-file /src/timidity/gus/timidity.cfg@/etc/timidity.cfg \
+    --preload-file /src/timidity/gus/timidity.cfg@/etc/timidity/freepats.cfg \
     --shell-file /src/shell.html \
     -lm
 '
 echo "==> OK. Salida en build/:"
 ls -lh build/
-echo "==> Servir con: ./serve.py  (http://localhost:8080/doom.html)"
+echo "==> Servir con: ./serve.py 8090  (http://localhost:8090/doom.html)"

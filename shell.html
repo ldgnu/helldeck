@@ -4,140 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>DOOM en el navegador</title>
+<title>DOOM</title>
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body {
-    background: #0a0505 radial-gradient(ellipse at 50% 30%, #2a0d08 0%, #0a0505 70%);
-    color: #d8d8d8; font-family: "Courier New", monospace; margin: 0;
-    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-    text-transform: uppercase;
+  html, body { height: 100%; }
+  body { margin: 0; background: #000; overflow: hidden; }
+  canvas {
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    object-fit: contain; image-rendering: pixelated; background: #000;
   }
-  header { padding: 14px 10px 6px; text-align: center; }
-  .logo {
-    margin: 0 0 10px; font-size: 44px; font-weight: 900; letter-spacing: 6px;
-    background: linear-gradient(#ffe9a3 5%, #f5b301 35%, #8a4b00 55%, #ffdf70 75%, #7a3c00 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 3px 0 #300) drop-shadow(0 0 18px rgba(255,60,0,.35));
+  /* Selector de WAD: aparece con el mouse, se oculta solo */
+  #switch {
+    position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 10; display: flex; gap: 6px; opacity: 0; transition: opacity .3s;
+    pointer-events: none;
   }
-  .logo small { display: block; font-size: 11px; letter-spacing: 4px; color: #a33;
-                -webkit-text-fill-color: #a33; filter: none; margin-top: 4px; }
-  #wads { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  #wads button, #bar button {
-    background: linear-gradient(#3a1512, #1c0a08); color: #ffb199;
-    border: 2px solid #7a1f14; padding: 8px 16px; font-family: inherit;
-    font-weight: bold; cursor: pointer; font-size: 13px; letter-spacing: 1px;
-    box-shadow: inset 0 1px 0 rgba(255,150,100,.25), 0 2px 0 #000;
+  #switch.show { opacity: 1; pointer-events: auto; }
+  #switch button {
+    background: rgba(10,10,10,.8); color: #999; border: 1px solid #444;
+    font-family: system-ui, sans-serif; font-size: 11px; letter-spacing: 1px;
+    padding: 5px 10px; cursor: pointer;
   }
-  #wads button.active { border-color: #ffb301; color: #ffe9a3;
-    box-shadow: inset 0 1px 0 rgba(255,220,120,.4), 0 0 12px rgba(255,150,0,.4); }
-  #wads button:hover, #bar button:hover { background: linear-gradient(#572019, #2a0f0b);
-    color: #fff; border-color: #e33; }
-  #wrap { position: relative; width: min(96vw, 960px); margin-top: 12px;
-    border: 4px solid #333; outline: 2px solid #111;
-    box-shadow: 0 0 0 2px #5a1a10, 0 0 40px rgba(255,40,0,.25), 0 10px 30px #000; }
-  canvas { width: 100%; image-rendering: pixelated; background: #000; display: block; }
-  #wrap::after { /* scanlines CRT */
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: repeating-linear-gradient(rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
-  }
-  #bar { display: flex; gap: 10px; margin: 12px 0 4px; justify-content: center; }
-  #status { color: #ffb301; font-size: 12px; min-height: 16px; text-align: center;
-            letter-spacing: 1px; }
-  #status::before { content: "> "; color: #e33; }
-  details { width: min(96vw, 960px); margin: 8px 0 24px; color: #c09080;
-            font-size: 13px; border: 1px solid #521a12; padding: 8px 12px;
-            background: rgba(20,5,3,.6); }
-  summary { cursor: pointer; color: #ffb199; }
-  table { border-collapse: collapse; margin-top: 6px; }
-  td { border: 1px solid #521a12; padding: 3px 10px; }
-  td:first-child { color: #ffe9a3; white-space: nowrap; }
-  footer { color: #5a2018; font-size: 11px; padding-bottom: 16px; letter-spacing: 2px; }
+  #switch button.active { color: #ffb301; border-color: #ffb301; }
+  #switch button:hover { color: #fff; border-color: #fff; }
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">DOOM<small>en el navegador &mdash; tus wads</small></div>
-  <div id="wads">
-    <button data-wad="doom1.wad">DOOM 1</button>
-    <button data-wad="freedoom1.wad">Freedoom 1</button>
-    <button data-wad="freedoom2.wad">Freedoom 2</button>
-  </div>
-</header>
-
-<div id="wrap">
-  <canvas id="canvas" width="640" height="400"
-    oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
+<canvas id="canvas" width="640" height="400"
+  oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
+<div id="switch">
+  <button data-wad="doom.wad">ULTIMATE</button>
+  <button data-wad="doom2.wad">DOOM 2</button>
+  <button data-wad="plutonia.wad">PLUTONIA</button>
+  <button data-wad="tnt.wad">TNT</button>
+  <button data-wad="doom1.wad">SHAREWARE</button>
 </div>
-
-<div id="bar">
-  <button id="btn-full">Pantalla completa</button>
-  <button id="btn-restart">Reiniciar</button>
-</div>
-<div id="status">cargando...</div>
-
-<details>
-  <summary>Controles y saves</summary>
-  <table>
-    <tr><td>Flechas</td><td>moverse / girar</td></tr>
-    <tr><td>Ctrl</td><td>disparar</td></tr>
-    <tr><td>Espacio</td><td>usar / abrir puertas</td></tr>
-    <tr><td>Shift</td><td>correr</td></tr>
-    <tr><td>Alt + flechas</td><td>strafe lateral</td></tr>
-    <tr><td>1-7</td><td>cambiar arma</td></tr>
-    <tr><td>Enter / Esc</td><td>confirmar / menu</td></tr>
-    <tr><td>F2 / F3 / F6</td><td>guardar / cargar / quicksave</td></tr>
-  </table>
-  <p>Las partidas (F2) se guardan en el navegador y sobreviven recargas.
-  El sonido se activa con la primera tecla o click (lo exige el navegador).</p>
-</details>
-
-<footer>id software 1993 &mdash; motor doomgeneric &mdash; wasm</footer>
-
 <script>
   var params = new URLSearchParams(location.search);
-  var WAD = params.get('wad') || 'doom1.wad';
-  var KNOWN = ['doom1.wad', 'freedoom1.wad', 'freedoom2.wad'];
-  if (KNOWN.indexOf(WAD) < 0) WAD = 'doom1.wad';
+  var WAD = params.get('wad') || 'doom.wad';
+  var KNOWN = ['doom.wad', 'doom2.wad', 'plutonia.wad', 'tnt.wad', 'doom1.wad'];
+  if (KNOWN.indexOf(WAD) < 0) WAD = 'doom.wad';
 
-  document.querySelectorAll('#wads button').forEach(function (b) {
+  // Selector: se muestra al mover el mouse, se oculta a los 3s.
+  var sw = document.getElementById('switch'), swTimer = null;
+  document.querySelectorAll('#switch button').forEach(function (b) {
     if (b.dataset.wad === WAD) b.classList.add('active');
     b.addEventListener('click', function () {
       if (b.dataset.wad !== WAD) location.search = '?wad=' + b.dataset.wad;
     });
   });
-  document.getElementById('btn-full').addEventListener('click', function () {
-    var c = document.getElementById('canvas');
-    if (c.requestFullscreen) c.requestFullscreen();
-  });
-  document.getElementById('btn-restart').addEventListener('click', function () {
-    location.reload();
-  });
+  function pokeSwitch() {
+    sw.classList.add('show');
+    clearTimeout(swTimer);
+    swTimer = setTimeout(function () { sw.classList.remove('show'); }, 3000);
+  }
+  window.addEventListener('mousemove', pokeSwitch);
+  pokeSwitch();
 
   var Module = {
     arguments: ['-iwad', '/' + WAD],
     canvas: document.getElementById('canvas'),
     preRun: [function () {
-      // Saves y config persistentes en IndexedDB (sobreviven recargas).
-      // El motor guarda en $HOME; lo apuntamos a /persist (montaje IDBFS).
-      // addRunDependency frena el main hasta que los saves se cargan.
-      FS.mkdir('/persist');
+      // Solo montajes sincronicos: el .data aun no esta extraido aca.
+      try { FS.mkdir('/persist'); } catch (e) {}
       FS.mount(IDBFS, {}, '/persist');
-      ENV['HOME'] = '/persist';
-      addRunDependency('cargar-saves');
-      FS.syncfs(true, function () {
-        removeRunDependency('cargar-saves');
-      });
+      FS.chdir('/persist');
+      ENV['TIMIDITY_CFG'] = '/gus/timidity.cfg';
+      FS.syncfs(true, function () {});
     }],
-    onRuntimeInitialized: function () {
-      document.getElementById('status').textContent = 'corriendo. flechas para moverte.';
-    },
-    setStatus: function (text) {
-      document.getElementById('status').textContent = text;
-    }
+    preMain: [function () {
+      // Aca el .data YA esta extraido: sembrar cfg/s si faltan.
+      try { FS.stat('/persist/timidity.cfg'); }
+      catch (e) {
+        FS.writeFile('/persist/timidity.cfg', FS.readFile('/gus/timidity.cfg'));
+      }
+      try { FS.stat('/persist/default.cfg'); }
+      catch (e) {
+        FS.writeFile('/persist/default.cfg',
+          'timidity_cfg_path "/gus/timidity.cfg"\n' +
+          'music_volume 4\n' +
+          'sfx_volume 8\n');
+      }
+    }]
   };
-  // Sincroniza saves a IndexedDB cada 30s y al cerrar la pestaña.
   setInterval(function () {
     if (typeof FS !== 'undefined') FS.syncfs(false, function () {});
   }, 30000);

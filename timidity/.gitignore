@@ -1,0 +1,4 @@
+# Parches GUS (60MB descomprimido, no se commitean)
+gus/
+*.deb
+*.tar.gz

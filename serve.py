@@ -19,6 +19,7 @@ class H(http.server.SimpleHTTPRequestHandler):
         # COOP/COEP para threads (por si se habilitan a futuro) + no-cache del html
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
+        self.send_header("Cache-Control", "no-store, must-revalidate")
         super().end_headers()
 
     def log_message(self, *a):
