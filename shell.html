@@ -75,6 +75,10 @@
     }
   };
   // El click del usuario desbloquea WebAudio (el navegador lo exige).
+  // ?autoplay=1 lo saltea (útil para tests headless y bookmarks).
+  if (new URLSearchParams(location.search).has('autoplay')) {
+    document.getElementById('overlay').classList.add('hidden');
+  }
   document.getElementById('overlay').addEventListener('click', function () {
     this.classList.add('hidden');
     document.getElementById('canvas').focus();
